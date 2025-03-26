@@ -22,13 +22,7 @@ base_height = 18.5
 power_rad = 3.5  # 7
 button_rad = 1.5 + 1  # 4
 
-panel_dist_center = 85
-panel_width = 100
-panel_depth = 20
-panel_height = 30
-panel_angle_drop = 8  # amount of drop to created slope for top and bottom of panel
 
-tol = 0.1  # tolerance
 
 # Function to create snap fit mounts
 def make_snap_fit(x, y, h, r):
@@ -52,11 +46,14 @@ base_shell = Cylinder(base_rad, base_height,
 base_shell = Rot(180, 0, 0) * base_shell #.rotated(Axis.X_AXIS, 180)
 
 # Add ledge at top where lamp body sits
+groove_od = 1.5 # groove offsets from pedastal_rad 
+tol = 0.1  # tolerance for fitting lamp
+
 top_face = base_shell.faces().sort_by(Axis.Z)[-1]
 top_plane = Plane(top_face)
 
-outer_circle = Circle(pedastal_rad - 1.5 - tol, align=(Align.CENTER, Align.CENTER))
-inner_circle = Circle(pedastal_rad - 3.0 + tol, align=(Align.CENTER, Align.CENTER))
+outer_circle = Circle(pedastal_rad + wall_thickness - groove_od - tol, align=(Align.CENTER, Align.CENTER))
+inner_circle = Circle(pedastal_rad + wall_thickness - inset_width + tol, align=(Align.CENTER, Align.CENTER))
 ledge_ring = outer_circle - inner_circle
 ledge_ring = ledge_ring.located(Location((0, 0, 0))) #base_height)))
 ledge = extrude(ledge_ring, 1)
@@ -66,7 +63,7 @@ base = base_shell + ledge
 # Create cutout for the main cavity
 fillet_rad = 2
 pizza_depth = 0.6
-top_circle = Circle(pedastal_rad - inset_width + tol)
+top_circle = Circle(pedastal_rad + wall_thickness - inset_width + tol)
 middle_circle = Pos(0, 0, -inset_height) * Circle(pedastal_rad)
 bottom_circle = Pos(0, 0, -base_height + base_thickness) * Circle(pedastal_rad)
 cavity = loft(Sketch() + [top_circle, middle_circle, bottom_circle], ruled=True)
@@ -200,9 +197,9 @@ if test:
     base = base.intersect(test_box)
 
 # Export to STL
-show(base, position=(50, 0, 39)) # from right
+# show(base, position=(50, 0, 39)) # from right
 #show(base, position=(-20, -80, -5)) # from front
 #show(base, position=(-120, 0, -15)) # from left
 #show(base, position=(0, 0, 100)) # from top
-#show(base)
+show(base, reset_camera=Camera.KEEP)
 export_stl(base, "models/lamp_base_6.stl")
